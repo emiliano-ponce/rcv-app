@@ -1,0 +1,52 @@
+{{define "index"}}
+<!doctype html>
+<html>
+  <head>
+    <title>Home</title>
+    <script
+      src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"
+      integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <h1>Ranked Choice Results</h1>
+
+    <button hx-post="/tabulate" hx-target="#results" hx-indicator="#loading">
+      Calculate Winner
+    </button>
+
+    <div id="loading" class="htmx-indicator">Calculating...</div>
+
+    <div id="results"></div>
+  </body>
+</html>
+{{end}} 
+
+{{define "results-table"}}
+<table border="1">
+  <thead>
+    <tr>
+      <th>Round</th>
+      <th>Winner/Eliminated</th>
+      <th>Counts</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .Rounds}}
+    <tr>
+      <td>{{.RoundNumber}}</td>
+      <td>
+        {{if .Eliminated}}Eliminated: {{.Eliminated}}{{else}}Winner
+        Declared{{end}}
+      </td>
+      <td>
+        {{range $id, $count := .VoteCounts}} ID {{$id}}: {{$count}} votes;
+        {{end}}
+      </td>
+    </tr>
+    {{end}}
+  </tbody>
+</table>
+<h3>Final Winner: {{.Winner}}</h3>
+{{end}}

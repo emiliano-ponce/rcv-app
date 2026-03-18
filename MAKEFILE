@@ -1,0 +1,19 @@
+BINARY_NAME=rcv-app
+MAIN_PATH=./cmd/server/main.go
+
+.PHONY: build run tidy clean
+
+tidy:
+	go mod tidy
+
+build:
+	go build -o ${BINARY_NAME} ${MAIN_PATH}
+
+run:
+	go run ${MAIN_PATH}
+
+clean:
+	go clean
+	rm -f ${BINARY_NAME}
+
+dev: tidy run
