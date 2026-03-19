@@ -1,0 +1,21 @@
+{{define "styles"}}
+<link rel="stylesheet" href="/static/main.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap"
+    rel="stylesheet"
+/>
+{{end}} {{define "nav"}}
+<nav>
+    <a href="/" class="wordmark">Ranked<span>Choice</span></a>
+</nav>
+{{end}} {{define "head"}}
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script
+    src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"
+    integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz"
+    crossorigin="anonymous"
+></script>
+{{template "styles" .}} {{end}}

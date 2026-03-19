@@ -1,0 +1,50 @@
+.hero {
+    padding-bottom: 32px;
+}
+.hero h1 {
+    margin-bottom: 12px;
+}
+.hero-sub {
+    font-size: 1.05rem;
+}
+.panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+@media (max-width: 560px) {
+    .panels {
+        grid-template-columns: 1fr;
+    }
+    .poll-card {
+        order: -1;
+    }
+}
+.candidate-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 4px;
+}
+.candidate-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.candidate-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--indigo);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.candidate-num.opt {
+    background: var(--border);
+    color: var(--navy-60);
+}

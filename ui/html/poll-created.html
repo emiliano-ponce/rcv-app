@@ -1,0 +1,128 @@
+{{define "poll-created"}}
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Poll Created — RankedChoice</title>
+    {{template "head" .}}
+    <style>
+      .poll-key {
+        font-family: "Courier New", monospace;
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: var(--indigo);
+        background: #eef2ff;
+        border: 2px dashed #c7d2fe;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        margin: 16px 0;
+      }
+      .share-section {
+        margin-top: 28px;
+      }
+      .candidate-chip {
+        display: inline-block;
+        padding: 4px 12px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        font-size: 0.85rem;
+        margin: 3px;
+      }
+      .success-icon {
+        width: 52px;
+        height: 52px;
+        background: #ecfdf5;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin-bottom: 16px;
+      }
+      .action-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 24px;
+        flex-wrap: wrap;
+      }
+    </style>
+  </head>
+  <body>
+    {{template "nav" .}}
+
+    <div class="page">
+      <div class="success-icon">✓</div>
+      <h1>Poll created!</h1>
+      <p class="text-muted" style="margin-top: 8px; font-size: 1.05rem">
+        Share the link or key below so voters can participate.
+      </p>
+
+      <div class="card" style="margin-top: 32px">
+        <h3>Candidates</h3>
+        <div>
+          {{range .Poll.Candidates}}
+          <span class="candidate-chip">{{.Name}}</span>
+          {{end}}
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 16px">
+        <h3>Share link</h3>
+        <p class="text-muted text-sm">Send this URL directly to voters.</p>
+        <div class="copy-row">
+          <input
+            type="text"
+            id="share-link"
+            value="{{.BaseURL}}/polls/{{.Poll.Key}}"
+            readonly
+            class="font-mono"
+            style="font-size: 0.85rem"
+          />
+          <button
+            class="btn btn-ghost btn-sm copy-btn"
+            onclick="copyText('share-link', this)"
+          >
+            Copy
+          </button>
+        </div>
+
+        <div class="share-section">
+          <h3>Poll key</h3>
+          <p class="text-muted text-sm">
+            Voters can also enter this key on the home page.
+          </p>
+          <div class="poll-key">{{.Poll.Key}}</div>
+          <button
+            class="btn btn-ghost btn-sm"
+            onclick="navigator.clipboard.writeText('{{.Poll.Key}}').then(()=>this.textContent='Copied!')"
+          >
+            Copy key
+          </button>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <a href="/polls/{{.Poll.Key}}" class="btn btn-primary"
+          >Cast my vote →</a
+        >
+        <a href="/polls/{{.Poll.Key}}/results" class="btn btn-ghost"
+          >View results</a
+        >
+      </div>
+    </div>
+
+    <script>
+      function copyText(inputId, btn) {
+        const el = document.getElementById(inputId);
+        navigator.clipboard.writeText(el.value).then(() => {
+          const orig = btn.textContent;
+          btn.textContent = "Copied!";
+          setTimeout(() => (btn.textContent = orig), 2000);
+        });
+      }
+    </script>
+  </body>
+</html>
+{{end}}

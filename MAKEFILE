@@ -16,4 +16,15 @@ clean:
 	go clean
 	rm -f ${BINARY_NAME}
 
+fmt:
+	gofmt -s -w .
+
+lint:
+	staticcheck ./...
+
+test:
+	go test ./...
+
 dev: tidy run
+
+check: fmt lint

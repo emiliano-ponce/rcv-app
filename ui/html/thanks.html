@@ -1,0 +1,52 @@
+{{define "thanks"}}
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Thanks for voting! — RankedChoice</title>
+    {{template "head" .}}
+    <style>
+      .thanks-card {
+        text-align: center;
+        padding: 64px 32px;
+        margin-top: 48px;
+      }
+      .big-check {
+        font-size: 3rem;
+        margin-bottom: 24px;
+        display: block;
+      }
+      .thanks-card h1 {
+        margin-bottom: 12px;
+      }
+      .action-row {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 32px;
+      }
+    </style>
+  </head>
+  <body>
+    {{template "nav" .}}
+
+    <div class="page">
+      <div class="card thanks-card">
+        <span class="big-check">🗳</span>
+        <h1>Ballot submitted!</h1>
+        <p class="text-muted">
+          Your vote for <strong>{{.Poll.Title}}</strong> has been recorded.
+          Results are updated live as more ballots come in.
+        </p>
+
+        <div class="action-row">
+          <a href="/polls/{{.Poll.Key}}/results" class="btn btn-primary"
+            >See live results →</a
+          >
+          <a href="/" class="btn btn-ghost">Create another poll</a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+{{end}}
