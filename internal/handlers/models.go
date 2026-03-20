@@ -8,8 +8,8 @@ import (
 )
 
 type Handler struct {
-	DB    *sql.DB
-	Tmpls *template.Template
+	DB            *sql.DB
+	TemplateCache map[string]*template.Template
 }
 
 type homeData struct {

@@ -313,3 +313,30 @@ func TestTabulate_BordaAlsoTiedFallsBackToLowestID(t *testing.T) {
 		t.Errorf("round 1 eliminated: got %d, want 1 (lowest-ID fallback after Borda tie)", r1.EliminatedID)
 	}
 }
+
+func TestComputeBordaScores(t *testing.T) {
+	candidates := map[int]bool{1: true, 2: true, 3: true}
+	ballots := mkBallots(
+		[]int{3, 1, 2},
+		[]int{3, 1, 2},
+		[]int{3, 1, 2},
+		[]int{1, 3, 2},
+		[]int{1, 3, 2},
+		[]int{2, 1, 3},
+		[]int{2, 3, 1},
+	)
+
+	scores := computeBordaScores(candidates, ballots)
+
+	expected := map[int]int{
+		1: 8,
+		2: 4,
+		3: 9,
+	}
+
+	for id, want := range expected {
+		if got := scores[id]; got != want {
+			t.Errorf("candidate %d Borda score: got %d, want %d", id, got, want)
+		}
+	}
+}

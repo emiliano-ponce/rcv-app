@@ -1,0 +1,45 @@
+{{define "title"}}Results — {{.Poll.Title}}{{end}}
+
+{{define "head"}}
+  <link rel="stylesheet" href="/static/results.css">
+{{end}}
+
+{{define "content"}}
+  <div class="page-wide">
+    <div class="poll-header">
+      <div class="header-row">
+        <div>
+          <h1>{{.Poll.Title}}</h1>
+          {{if .Poll.Description}}
+          <p class="text-muted">{{.Poll.Description}}</p>
+          {{end}}
+        </div>
+        <span class="live-badge">
+          <span class="live-dot"></span>
+          Live results
+        </span>
+      </div>
+      <div class="ballot-count">
+        {{.BallotCount}} ballot{{if ne .BallotCount 1}}s{{end}} received
+      </div>
+      <a href="/polls/{{.Poll.Key}}" class="btn btn-ghost btn-sm"
+        >Cast a vote →</a
+      >
+    </div>
+
+    <!-- HTMX live-polling fragment target -->
+    <div
+      id="results-content"
+      hx-get="/polls/{{.Poll.Key}}/results/fragment"
+      hx-trigger="load, every 8s"
+      hx-swap="innerHTML"
+      hx-indicator="#live-indicator"
+    >
+      {{template "results-fragment-body" .}}
+    </div>
+
+    <div id="live-indicator" class="htmx-indicator" style="margin-top: 12px">
+      <span class="spinner"></span> Refreshing…
+    </div>
+  </div>
+{{end}}

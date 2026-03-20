@@ -1,0 +1,95 @@
+{{define "title"}}Vote — {{.Poll.Title}}{{end}}
+
+{{define "head"}}
+  <link rel="stylesheet" href="/static/vote.css">
+  <script src="/static/vote.js" defer></script>
+{{end}}
+
+{{define "content"}}
+  <div class="page">
+    <h1>{{.Poll.Title}}</h1>
+    <div class="poll-meta">
+      {{if .Poll.Description}}
+      <p class="poll-desc text-muted">{{.Poll.Description}}</p>
+      {{end}}
+    </div>
+
+    {{if .Error}}
+    <div class="alert alert-error">{{.Error}}</div>
+    {{end}}
+
+    <div class="card">
+      <h3 style="margin-bottom: 4px">Rank the candidates</h3>
+      <p class="text-muted text-sm" style="margin-bottom: 16px">
+        Drag candidates from the left into your ranking order. 1st = top
+        preference.
+      </p>
+
+      <div class="ranking-ui">
+        <!-- Pool of unranked candidates -->
+        <div>
+          <div class="rank-col-label">Candidates</div>
+          <div
+            class="candidate-pool"
+            id="pool"
+            ondragover="onDragOver(event)"
+            ondrop="onDrop(event, 'pool')"
+            ondragleave="onDragLeave(event)"
+          >
+            {{range .Poll.Candidates}}
+            <div
+              class="cand-card"
+              draggable="true"
+              data-id="{{.ID}}"
+              ondragstart="onDragStart(event)"
+              ondragend="onDragEnd(event)"
+              onclick="moveToRanking(this)"
+            >
+              <span class="drag-handle">⠿</span>
+              {{.Name}}
+            </div>
+            {{end}}
+          </div>
+        </div>
+
+        <!-- Ranked list -->
+        <div>
+          <div class="rank-col-label">Your ranking</div>
+          <div
+            class="ranking-list"
+            id="ranking"
+            ondragover="onDragOver(event)"
+            ondrop="onDrop(event, 'ranking')"
+            ondragleave="onDragLeave(event)"
+          ></div>
+        </div>
+      </div>
+
+      <form
+        action="/polls/{{.Poll.Key}}/vote"
+        method="POST"
+        class="submit-area"
+        id="vote-form"
+      >
+        <input type="hidden" name="rankings" id="rankings-input" />
+        <button
+          type="submit"
+          class="btn btn-primary"
+          id="submit-btn"
+          disabled
+        >
+          Submit ballot →
+        </button>
+        <p class="rank-count" id="rank-count">
+          Drag at least 1 candidate to your ranking to vote.
+        </p>
+      </form>
+    </div>
+
+    <p class="text-muted text-sm" style="margin-top: 16px">
+      <a href="/polls/{{.Poll.Key}}/results" style="color: var(--indigo)"
+        >View current results →</a
+      >
+    </p>
+  </div>
+{{end}}

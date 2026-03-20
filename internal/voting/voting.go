@@ -111,12 +111,6 @@ func breakTie(tied []int, activeCandidates map[int]bool, ballots []models.Ballot
 
 	bordaScores := computeBordaScores(activeCandidates, ballots)
 
-	// Among the tied candidates, find the minimum Borda score.
-	tiedSet := make(map[int]bool, len(tied))
-	for _, id := range tied {
-		tiedSet[id] = true
-	}
-
 	minBorda := -1
 	for _, id := range tied {
 		if minBorda == -1 || bordaScores[id] < minBorda {
@@ -145,6 +139,10 @@ func computeBordaScores(activeCandidates map[int]bool, ballots []models.Ballot) 
 	n := len(activeCandidates)
 	scores := make(map[int]int, n)
 
+	for id := range activeCandidates {
+		scores[id] = 0
+	}
+
 	for _, b := range ballots {
 		rank := 0 // position among active candidates seen so far on this ballot
 		for _, id := range b.Rankings {
@@ -153,9 +151,7 @@ func computeBordaScores(activeCandidates map[int]bool, ballots []models.Ballot) 
 			}
 			// Points awarded: n-1 for rank 0 (first active), n-2 for rank 1, etc.
 			points := n - 1 - rank
-			if points > 0 {
-				scores[id] += points
-			}
+			scores[id] += points
 			rank++
 		}
 	}

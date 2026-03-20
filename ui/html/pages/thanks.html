@@ -1,0 +1,25 @@
+{{define "title"}}Thanks for voting! — RankedChoice{{end}}
+
+{{define "head"}}
+  <link rel="stylesheet" href="/static/thanks.css">
+{{end}}
+
+{{define "content"}}
+  <div class="page">
+    <div class="card thanks-card">
+      <span class="big-check">🗳</span>
+      <h1>Ballot submitted!</h1>
+      <p class="text-muted">
+        Your vote for <strong>{{.Poll.Title}}</strong> has been recorded.
+        Results are updated live as more ballots come in.
+      </p>
+
+      <div class="action-row">
+        <a href="/polls/{{.Poll.Key}}/results" class="btn btn-primary"
+          >See live results →</a
+        >
+        <a href="/" class="btn btn-ghost">Create another poll</a>
+      </div>
+    </div>
+  </div>
+{{end}}

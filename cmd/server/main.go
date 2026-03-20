@@ -1,7 +1,6 @@
 package main
 
 import (
-	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -9,28 +8,6 @@ import (
 	"github.com/egp/rcv-app/internal/database"
 	"github.com/egp/rcv-app/internal/handlers"
 )
-
-// templateFuncs provides helpers available in all templates.
-var templateFuncs = template.FuncMap{
-	// seq returns [1, 2, ..., n] for ranging in templates.
-	"seq": func(n int) []int {
-		s := make([]int, n)
-		for i := range s {
-			s[i] = i + 1
-		}
-		return s
-	},
-	"add": func(a, b int) int { return a + b },
-	"sub": func(a, b int) int { return a - b },
-	// percent returns the integer percentage of count out of total (0–100).
-	// Safe: returns 0 when total is 0.
-	"percent": func(count, total int) int {
-		if total == 0 {
-			return 0
-		}
-		return (count * 100) / total
-	},
-}
 
 func main() {
 	// 1. Database URL — defaults to local file for dev.
@@ -47,15 +24,7 @@ func main() {
 	}
 	defer db.Close()
 
-	// 3. Parse all templates from ui/html/. FuncMap must be set before parsing.
-	tmpls := template.Must(
-		template.New("").Funcs(templateFuncs).ParseGlob("ui/html/*.html"),
-	)
-
-	h := &handlers.Handler{
-		DB:    db,
-		Tmpls: tmpls,
-	}
+	h := handlers.NewHandler(db)
 
 	mux := http.NewServeMux()
 

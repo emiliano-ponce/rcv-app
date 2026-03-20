@@ -252,18 +252,6 @@ textarea {
   background: var(--border);
 }
 
-/* ── HTMX indicator ── */
-.htmx-indicator {
-  display: none;
-}
-.htmx-request .htmx-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.85rem;
-  color: var(--navy-60);
-}
-
 /* ── Spinner ── */
 @keyframes spin {
   to {

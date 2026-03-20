@@ -1,0 +1,111 @@
+{{ define "title" }}RankedChoice — Fair Voting, Made Simple{{ end }}
+
+{{ define "head" }}
+  <link rel="stylesheet" href="/static/home.css" />
+{{ end }}
+
+{{ define "content" }}
+  <div class="page">
+    <div class="hero">
+      <h1>Fair voting,<br />for any group.</h1>
+      <p class="hero-sub text-muted">
+        Create a ranked choice poll in seconds. Share with your group. Let the
+        best option win.
+      </p>
+    </div>
+
+    {{ if .Error }}
+      <div class="alert alert-error">{{ .Error }}</div>
+    {{ end }}
+
+
+    <div class="panels">
+      <div class="card">
+        <h2>Create a poll</h2>
+        <form action="/polls" method="POST">
+          <div class="field">
+            <label for="title">Poll title</label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              placeholder="e.g. Team lunch spot"
+              required
+              maxlength="120"
+            />
+          </div>
+          <div class="field">
+            <label for="description"
+              >Description <span class="text-muted">(optional)</span></label
+            >
+            <textarea
+              id="description"
+              name="description"
+              placeholder="Any context for voters…"
+              maxlength="400"
+            ></textarea>
+          </div>
+          <div class="field">
+            <label>Candidates <span class="text-muted">(3–10)</span></label>
+            <div class="candidate-list">
+              {{ range seq 10 }}
+                <div class="candidate-row">
+                  <div class="candidate-num{{ if gt . 3 }} opt{{ end }}">
+                    {{ . }}
+                  </div>
+                  <input
+                    type="text"
+                    name="candidate_{{ . }}"
+                    placeholder="{{ if le . 3 }}
+                      Candidate
+                      {{ . }}
+                    {{ else }}
+                      Optional
+                    {{ end }}"
+                    {{ if
+                      le
+                      .
+                      3
+                    }}
+                      required
+                    {{ end }}
+                    maxlength="80"
+                  />
+                </div>
+              {{ end }}
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full mt-16">
+            Create Poll →
+          </button>
+        </form>
+      </div>
+
+      <div class="card poll-card">
+        <h2>Find a poll</h2>
+        <p class="text-muted">
+          Have a poll key? Enter it to cast your vote or view results.
+        </p>
+        <form action="/find" method="POST" style="margin-top: 24px">
+          <div class="field">
+            <label for="key">Poll key</label>
+            <input
+              type="text"
+              id="key"
+              name="key"
+              placeholder="e.g. a1b2c3d4"
+              required
+              class="font-mono"
+              autocomplete="off"
+              autocapitalize="none"
+              spellcheck="false"
+            />
+          </div>
+          <button type="submit" class="btn btn-ghost btn-full mt-8">
+            Find Poll →
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+{{ end }}

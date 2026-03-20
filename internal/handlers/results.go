@@ -51,5 +51,5 @@ func (h *Handler) ResultsFragmentHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	h.render(w, "results-fragment", data)
+	h.renderFragment(w, "results", "results-fragment", data)
 }

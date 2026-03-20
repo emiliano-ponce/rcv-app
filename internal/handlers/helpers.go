@@ -2,15 +2,40 @@ package handlers
 
 import (
 	"crypto/rand"
+	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
+	"path/filepath"
 	"sort"
 
 	"github.com/egp/rcv-app/internal/models"
 	"github.com/egp/rcv-app/internal/voting"
 )
+
+// templateFuncs provides helpers available in all templates.
+var templateFuncs = template.FuncMap{
+	// seq returns [1, 2, ..., n] for ranging in templates.
+	"seq": func(n int) []int {
+		s := make([]int, n)
+		for i := range s {
+			s[i] = i + 1
+		}
+		return s
+	},
+	"add": func(a, b int) int { return a + b },
+	"sub": func(a, b int) int { return a - b },
+	// percent returns the integer percentage of count out of total (0–100).
+	// Safe: returns 0 when total is 0.
+	"percent": func(count, total int) int {
+		if total == 0 {
+			return 0
+		}
+		return (count * 100) / total
+	},
+}
 
 // generateKey produces a cryptographically random 8-character hex key.
 func generateKey() (string, error) {
@@ -21,12 +46,80 @@ func generateKey() (string, error) {
 	return hex.EncodeToString(b), nil
 }
 
-// render executes a named template, logging errors but never double-writing headers.
+func NewHandler(db *sql.DB) *Handler {
+	cache, err := newTemplateCache()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return &Handler{
+		DB:            db,
+		TemplateCache: cache,
+	}
+}
+
+func newTemplateCache() (map[string]*template.Template, error) {
+	cache := make(map[string]*template.Template)
+
+	pages, err := filepath.Glob("ui/html/pages/*.html")
+	if err != nil {
+		return nil, err
+	}
+
+	// Discover partials dynamically — no more hardcoding
+	partials, err := filepath.Glob("ui/html/partials/*.html")
+	if err != nil {
+		return nil, err
+	}
+
+	for _, page := range pages {
+		name := filepath.Base(page)
+
+		// Build the full file list: base + all partials + this page
+		// Order matters: base first so it's the named template set root
+		files := make([]string, 0, len(partials)+2)
+		files = append(files, "ui/html/base.html")
+		files = append(files, partials...)
+		files = append(files, page)
+
+		ts, err := template.New(name).Funcs(templateFuncs).ParseFiles(files...)
+		if err != nil {
+			return nil, fmt.Errorf("parsing template %q: %w", name, err)
+		}
+
+		cache[name] = ts
+	}
+
+	return cache, nil
+}
+
+// render executes the full base layout.
 func (h *Handler) render(w http.ResponseWriter, name string, data any) {
-	if err := h.Tmpls.ExecuteTemplate(w, name, data); err != nil {
+	ts, ok := h.TemplateCache[name+".html"]
+	if !ok {
+		log.Printf("template %q not found", name)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	if err := ts.ExecuteTemplate(w, "base", data); err != nil {
 		log.Printf("render %q: %v", name, err)
-		// Only write error if headers haven't been sent yet.
-		http.Error(w, "rendering error", http.StatusInternalServerError)
+		// Note: can't change status code here if WriteHeader already called
+	}
+}
+
+// renderFragment executes a named partial template without the base layout.
+// page is the cache key (e.g. "results"), tmpl is the defined template name.
+func (h *Handler) renderFragment(w http.ResponseWriter, page string, tmpl string, data any) {
+	ts, ok := h.TemplateCache[page+".html"]
+	if !ok {
+		log.Printf("template %q not found for fragment %q", page, tmpl)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	if err := ts.ExecuteTemplate(w, tmpl, data); err != nil {
+		log.Printf("renderFragment %q/%q: %v", page, tmpl, err)
 	}
 }
 
