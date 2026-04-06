@@ -33,7 +33,6 @@ body {
   background: var(--bg);
   color: var(--navy);
   min-height: 100vh;
-  line-height: 1.6;
 }
 
 /* ── Nav ── */
@@ -158,7 +157,7 @@ textarea {
   align-items: center;
   gap: 8px;
   padding: 11px 22px;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 8px;
   font-family: "DM Sans", sans-serif;
   font-size: 0.95rem;
@@ -170,6 +169,10 @@ textarea {
     transform 0.1s,
     box-shadow 0.15s;
   white-space: nowrap;
+  &:disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
 }
 .btn:active {
   transform: translateY(1px);
@@ -185,10 +188,18 @@ textarea {
 .btn-ghost {
   background: transparent;
   color: var(--indigo);
-  border: 1.5px solid var(--indigo);
+  border-color: var(--indigo);
 }
 .btn-ghost:hover {
   background: rgba(79, 70, 229, 0.06);
+}
+.btn-danger {
+  background: var(--red);
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(220, 38, 38, 0.3);
+}
+.btn-danger:hover {
+  background: #b91c1c;
 }
 .btn-sm {
   padding: 7px 14px;

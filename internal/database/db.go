@@ -58,6 +58,19 @@ func runMigrations(db *sql.DB) error {
 	);
 	`
 
-	_, err := db.Exec(schema)
-	return err
+	if _, err := db.Exec(schema); err != nil {
+		return err
+	}
+
+	// Additive migrations — ALTER TABLE ignores "duplicate column" errors so
+	// this is safe to run on every startup against an existing database.
+	additiveMigrations := []string{
+		`ALTER TABLE polls ADD COLUMN closed_at DATETIME`,
+	}
+	for _, m := range additiveMigrations {
+		// Ignore errors; the only expected failure is "duplicate column name".
+		_, _ = db.Exec(m)
+	}
+
+	return nil
 }

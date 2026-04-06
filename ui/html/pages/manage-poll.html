@@ -1,0 +1,147 @@
+{{ define "title" }}Manage Poll — RankedChoice{{ end }}
+{{ define "head" }}
+  <link rel="stylesheet" href="/static/manage-poll.css" />
+  <script src="/static/manage-poll.js" defer></script>
+{{ end }}
+
+{{ define "content" }}
+  <div class="page" data-poll-key="{{ .Poll.Key }}">
+    <div class="manage-header">
+      <div class="title-row">
+        <span class="success-icon">✓</span>
+        <div class="title-block">
+          <h1
+            class="editable-title{{ if .Poll.ClosedAt.Valid }}closed{{ end }}"
+            data-field="title"
+            title="{{ if not .Poll.ClosedAt.Valid }}Click to edit{{ end }}"
+          >
+            {{ .Poll.Title }}
+          </h1>
+          <p
+            class="editable-description text-muted{{ if .Poll.ClosedAt.Valid }}
+              closed
+            {{ end }}"
+            data-field="description"
+            title="{{ if not .Poll.ClosedAt.Valid }}Click to edit{{ end }}"
+          >
+            {{ if .Poll.Description }}
+              {{ .Poll.Description }}
+            {{ else }}
+              <em>No description — click to add one</em>
+            {{ end }}
+          </p>
+        </div>
+      </div>
+      {{ if .Poll.ClosedAt.Valid }}
+        <span class="badge badge-closed">Closed</span>
+      {{ else }}
+        <span class="badge badge-open">Open</span>
+      {{ end }}
+    </div>
+
+    <div class="card" style="margin-top: 24px">
+      <div class="card-header">
+        <h3>Candidates</h3>
+        {{ if not .Poll.ClosedAt.Valid }}
+          <span class="hint text-muted text-sm"
+            >Click a name to rename · × to remove</span
+          >
+        {{ end }}
+      </div>
+
+      <div class="candidates-list" id="candidates-list">
+        {{ range .Poll.Candidates }}
+          <div class="candidate-row" data-id="{{ .ID }}">
+            <span class="candidate-name">{{ .Name }}</span>
+            {{ if not $.Poll.ClosedAt.Valid }}
+              <button
+                class="btn-icon rename-btn"
+                title="Rename"
+                aria-label="Rename {{ .Name }}"
+              >
+                ✎
+              </button>
+              <button
+                class="btn-icon delete-btn"
+                title="Remove"
+                aria-label="Remove {{ .Name }}"
+              >
+                ×
+              </button>
+            {{ end }}
+          </div>
+        {{ end }}
+      </div>
+
+      {{ if not .Poll.ClosedAt.Valid }}
+        <form
+          class="add-candidate-row"
+          id="add-candidate-form"
+          onsubmit="return false"
+        >
+          <input
+            type="text"
+            id="new-candidate-input"
+            placeholder="Add a candidate…"
+            maxlength="100"
+            class="font-mono"
+          />
+          <button class="btn btn-ghost btn-sm" type="submit">Add</button>
+        </form>
+      {{ end }}
+    </div>
+
+    <div class="card" style="margin-top: 16px">
+      <h3>Share link</h3>
+      <p class="text-muted text-sm">Send this URL directly to voters.</p>
+      <div class="copy-row">
+        <input
+          type="text"
+          id="share-link"
+          value="{{ .BaseURL }}/polls/{{ .Poll.Key }}"
+          readonly
+          class="font-mono"
+          style="font-size: 0.85rem"
+        />
+        <button
+          class="btn btn-ghost btn-sm copy-btn"
+          onclick="copyText('share-link', this)"
+        >
+          Copy
+        </button>
+      </div>
+
+      <div class="share-section">
+        <h3>Poll key</h3>
+        <p class="text-muted text-sm">
+          Voters can also enter this key on the home page.
+        </p>
+        <div class="poll-key">{{ .Poll.Key }}</div>
+        <button
+          class="btn btn-ghost btn-sm"
+          onclick="navigator.clipboard.writeText('{{ .Poll.Key }}').then(()=>this.textContent='Copied!')"
+        >
+          Copy key
+        </button>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <a href="/polls/{{ .Poll.Key }}" class="btn btn-primary"
+        >Cast my vote →</a
+      >
+      <a href="/polls/{{ .Poll.Key }}/results" class="btn btn-ghost"
+        >View results</a
+      >
+      {{ if not .Poll.ClosedAt.Valid }}
+        <button
+          class="btn btn-danger"
+          id="close-poll-btn"
+          onclick="closePoll(this)"
+        >
+          Close poll
+        </button>
+      {{ end }}
+    </div>
+  </div>
+{{ end }}

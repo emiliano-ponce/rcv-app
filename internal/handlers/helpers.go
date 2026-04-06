@@ -126,9 +126,8 @@ func (h *Handler) renderFragment(w http.ResponseWriter, page string, tmpl string
 // getPollByKey fetches a poll and its candidates by the share key.
 func (h *Handler) getPollByKey(key string) (models.Poll, error) {
 	var poll models.Poll
-	err := h.DB.QueryRow(
-		"SELECT id, key, title, description FROM polls WHERE key = ?", key,
-	).Scan(&poll.ID, &poll.Key, &poll.Title, &poll.Description)
+	err := h.DB.QueryRow(`SELECT id, key, title, description, created_at, closed_at FROM polls WHERE key = ?`, key).
+		Scan(&poll.ID, &poll.Key, &poll.Title, &poll.Description, &poll.CreatedAt, &poll.ClosedAt)
 	if err != nil {
 		return poll, err
 	}

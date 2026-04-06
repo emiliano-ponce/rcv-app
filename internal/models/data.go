@@ -1,11 +1,15 @@
 package models
 
+import "database/sql"
+
 type Poll struct {
 	ID          int
 	Key         string
 	Title       string
 	Description string
+	CreatedAt   string
 	Candidates  []Candidate
+	ClosedAt    sql.NullTime
 }
 
 type Candidate struct {
