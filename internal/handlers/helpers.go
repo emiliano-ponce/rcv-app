@@ -243,7 +243,10 @@ func (h *Handler) buildResultsData(poll models.Poll) (resultsData, error) {
 
 		// Sort by votes descending for a consistent bar chart.
 		sort.Slice(rv.Candidates, func(i, j int) bool {
-			return rv.Candidates[i].Votes > rv.Candidates[j].Votes
+			if rv.Candidates[i].Votes != rv.Candidates[j].Votes {
+				return rv.Candidates[i].Votes > rv.Candidates[j].Votes
+			}
+			return rv.Candidates[i].Name < rv.Candidates[j].Name
 		})
 
 		data.Rounds = append(data.Rounds, rv)

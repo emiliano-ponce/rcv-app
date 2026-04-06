@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -21,6 +22,10 @@ func (h *Handler) VoteHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
+
+	rand.Shuffle(len(poll.Candidates), func(i, j int) {
+		poll.Candidates[i], poll.Candidates[j] = poll.Candidates[j], poll.Candidates[i]
+	})
 
 	h.render(w, "vote", voteData{Poll: poll})
 }

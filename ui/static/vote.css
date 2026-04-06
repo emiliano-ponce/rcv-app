@@ -56,18 +56,16 @@
       font-size: 0.95rem;
       font-weight: 500;
       user-select: none;
-      transition:
-        box-shadow 0.15s,
-        transform 0.15s,
-        border-color 0.15s;
     }
     .cand-card:hover {
       box-shadow: var(--shadow);
       border-color: #b0a9f8;
     }
     .cand-card.dragging {
-      opacity: 0.4;
-      transform: scale(0.98);
+      opacity: 0;
+      background: var(--border);
+      border-color: transparent;
+      box-shadow: none;
     }
     .cand-card:last-child {
       margin-bottom: 0;
