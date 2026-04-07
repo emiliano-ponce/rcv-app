@@ -9,7 +9,7 @@ import (
 )
 
 func TestDeletePollCascadesAssociatedRows(t *testing.T) {
-	db, err := sql.Open("sqlite", "file::memory:?cache=shared")
+	db, err := sql.Open("sqlite", "file::memory:")
 	if err != nil {
 		t.Fatalf("open test db: %v", err)
 	}

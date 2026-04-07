@@ -40,14 +40,10 @@
     </div>
 
     <div class="card" style="margin-top: 24px">
-      <div class="card-header">
-        <h3>Candidates</h3>
-        {{ if not .Poll.ClosedAt.Valid }}
-          <span class="hint text-muted text-sm"
-            >Click a name to rename · × to remove</span
-          >
-        {{ end }}
-      </div>
+      <h3>Candidates</h3>
+      {{ if not .Poll.ClosedAt.Valid }}
+        <p class="text-muted text-sm">Click a name to rename · × to remove</p>
+      {{ end }}
 
       <div class="candidates-list" id="candidates-list">
         {{ range .Poll.Candidates }}
@@ -135,7 +131,7 @@
       >
       {{ if not .Poll.ClosedAt.Valid }}
         <button
-          class="btn btn-danger"
+          class="btn btn-danger outlined"
           id="close-poll-btn"
           onclick="closePoll(this)"
         >

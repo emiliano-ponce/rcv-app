@@ -88,15 +88,6 @@
   color: #991b1b;
 }
 
-/* ── Card header ────────────────────────────────────────────────────────── */
-
-.card-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
 /* ── Candidate rows (replaces static chips for the manage view) ─────────── */
 
 .candidates-list {
@@ -165,6 +156,7 @@
   display: flex;
   gap: 8px;
   margin-top: 8px;
+  flex-wrap: wrap;
 }
 
 .add-candidate-row input {

@@ -56,17 +56,8 @@
                   <input
                     type="text"
                     name="candidate_{{ . }}"
-                    placeholder="{{ if le . 3 }}
-                      Candidate
-                      {{ . }}
-                    {{ else }}
-                      Optional
-                    {{ end }}"
-                    {{ if
-                      le
-                      .
-                      3
-                    }}
+                    placeholder="{{ if le . 3 }}Candidate {{ . }}{{ else }}Optional{{ end }}"
+                    {{ if le . 3 }}
                       required
                     {{ end }}
                     maxlength="80"
