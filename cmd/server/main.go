@@ -92,8 +92,14 @@ func main() {
 	mux.HandleFunc("DELETE /polls/{key}/candidates/{id}", h.PollManageDeleteCandidateHandler)
 	mux.HandleFunc("POST /polls/{key}/close", h.PollManageCloseHandler)
 
-	log.Println("Server starting at :8080")
-	log.Fatal(http.ListenAndServe("localhost:8080", mux))
+	port := strings.TrimSpace(os.Getenv("PORT"))
+	if port == "" {
+		port = "8080"
+	}
+
+	addr := ":" + port
+	log.Printf("Server starting at %s", addr)
+	log.Fatal(http.ListenAndServe(addr, mux))
 }
 
 func parseBoolEnv(name string, fallback bool) bool {
