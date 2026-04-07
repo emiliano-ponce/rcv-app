@@ -4,12 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 	"time"
 
+	"github.com/tursodatabase/libsql-client-go/libsql"
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
 	_ "modernc.org/sqlite"
 )
@@ -24,8 +26,8 @@ type migrationFile struct {
 }
 
 // InitDB opens and verifies the database connection, returning an error so the caller can decide how to handle failures.
-func InitDB(url string) (*sql.DB, error) {
-	db, err := sql.Open("libsql", url)
+func InitDB(dbURL string) (*sql.DB, error) {
+	db, err := openDB(dbURL)
 	if err != nil {
 		return nil, fmt.Errorf("open db: %w", err)
 	}
@@ -45,6 +47,45 @@ func InitDB(url string) (*sql.DB, error) {
 	StartCleanupWorker(db)
 
 	return db, nil
+}
+
+func openDB(dbURL string) (*sql.DB, error) {
+	authToken := strings.TrimSpace(os.Getenv("DATABASE_AUTH_TOKEN"))
+
+	if requiresAuthToken(dbURL) && isProductionEnv() && authToken == "" {
+		return nil, fmt.Errorf("DATABASE_AUTH_TOKEN is required for remote libsql URLs in production")
+	}
+
+	var opts []libsql.Option
+	if authToken != "" {
+		opts = append(opts, libsql.WithAuthToken(authToken))
+	}
+
+	connector, err := libsql.NewConnector(dbURL, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return sql.OpenDB(connector), nil
+}
+
+func requiresAuthToken(dbURL string) bool {
+	u, err := url.Parse(dbURL)
+	if err != nil {
+		return false
+	}
+
+	switch strings.ToLower(u.Scheme) {
+	case "libsql", "https", "http", "wss", "ws":
+		return true
+	default:
+		return false
+	}
+}
+
+func isProductionEnv() bool {
+	appEnv := strings.ToLower(strings.TrimSpace(os.Getenv("APP_ENV")))
+	return appEnv == "production" || appEnv == "prod"
 }
 
 func StartCleanupWorker(db *sql.DB) {
