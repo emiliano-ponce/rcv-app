@@ -238,6 +238,22 @@
     }
   };
 
+  window.deletePoll = async function (btn) {
+    const confirmation = prompt(
+      "Type DELETE to permanently delete this poll and all associated ballots/results.",
+    );
+    if (confirmation !== "DELETE") return;
+
+    btn.disabled = true;
+    try {
+      await api("DELETE", "");
+      location.href = "/";
+    } catch (err) {
+      alert(`Could not delete poll: ${err.message}`);
+      btn.disabled = false;
+    }
+  };
+
   // ── copyText (used by the share card) ──────────────────────────────────────
 
   window.copyText = function (id, btn) {

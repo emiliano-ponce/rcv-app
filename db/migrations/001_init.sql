@@ -1,30 +1,28 @@
-CREATE TABLE polls (
-    id TEXT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS polls (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    key TEXT UNIQUE NOT NULL,
     title TEXT NOT NULL,
-    description TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-)
-
-CREATE TABLE candidates (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    poll_id TEXT NOT NULL,
-    name TEXT NOT NULL,
-    FOREIGN KEY(poll_id) REFERENCES polls(id)
-)
-
-CREATE TABLE ballots (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    poll_id TEXT NOT NULL,
-    voter_id TEXT,
+    description TEXT NOT NULL DEFAULT '',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(poll_id) REFERENCES polls(id),
-)
+    closed_at DATETIME
+);
 
-CREATE TABLE ballot_rankings (
-    ballot_id INTEGER NOT NULL,
-    candidate_id INTEGER NOT NULL,
-    rank INTEGER NOT NULL,
-    PRIMARY KEY (ballot_id, candidate_id),
-    FOREIGN KEY (ballot_id) REFERENCES ballots(id),
-    FOREIGN KEY (candidate_id) REFERENCES candidates(id)
-)
+CREATE TABLE IF NOT EXISTS candidates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    poll_id INTEGER NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    display_order INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS ballots (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    poll_id INTEGER NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS ballot_rankings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ballot_id INTEGER NOT NULL REFERENCES ballots(id) ON DELETE CASCADE,
+    candidate_id INTEGER NOT NULL REFERENCES candidates(id) ON DELETE CASCADE,
+    rank INTEGER NOT NULL
+);

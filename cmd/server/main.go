@@ -42,6 +42,7 @@ func main() {
 
 	mux.HandleFunc("GET /polls/{key}/manage", h.PollManageHandler)
 	mux.HandleFunc("PATCH /polls/{key}", h.PollManageMetaHandler)
+	mux.HandleFunc("DELETE /polls/{key}", h.PollManageDeleteHandler)
 	mux.HandleFunc("POST /polls/{key}/candidates", h.PollManageAddCandidateHandler)
 	mux.HandleFunc("PATCH /polls/{key}/candidates/{id}", h.PollManageUpdateCandidateHandler)
 	mux.HandleFunc("DELETE /polls/{key}/candidates/{id}", h.PollManageDeleteCandidateHandler)

@@ -319,3 +319,23 @@ func (h *Handler) PollManageCloseHandler(w http.ResponseWriter, r *http.Request)
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+// PollManageDeleteHandler serves DELETE /polls/{key}
+// Deletes the poll and all associated data via cascade deletes.
+func (h *Handler) PollManageDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	key := r.PathValue("key")
+
+	res, err := h.DB.Exec(`DELETE FROM polls WHERE key = ?`, key)
+	if err != nil {
+		log.Printf("PollManageDeleteHandler: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if n, _ := res.RowsAffected(); n == 0 {
+		http.NotFound(w, r)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
