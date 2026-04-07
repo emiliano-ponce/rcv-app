@@ -36,6 +36,11 @@ func (h *Handler) FindPollHandler(w http.ResponseWriter, r *http.Request) {
 
 // CreatePollHandler serves POST /polls — creates a new poll and its candidates.
 func (h *Handler) CreatePollHandler(w http.ResponseWriter, r *http.Request) {
+	if strings.TrimSpace(r.FormValue("website")) != "" {
+		http.Error(w, "invalid form submission", http.StatusBadRequest)
+		return
+	}
+
 	title := strings.TrimSpace(r.FormValue("title"))
 	description := strings.TrimSpace(r.FormValue("description"))
 

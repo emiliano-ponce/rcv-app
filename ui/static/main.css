@@ -145,6 +145,14 @@ textarea {
 .field {
   margin-bottom: 20px;
 }
+.hp-field {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
 .field-hint {
   font-size: 0.8rem;
   color: var(--navy-60);

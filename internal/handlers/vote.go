@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/egp/rcv-app/internal/security"
 )
 
 // VoteHandler serves GET /polls/{key} — the voting page.
@@ -27,7 +30,7 @@ func (h *Handler) VoteHandler(w http.ResponseWriter, r *http.Request) {
 		poll.Candidates[i], poll.Candidates[j] = poll.Candidates[j], poll.Candidates[i]
 	})
 
-	h.render(w, "vote", voteData{Poll: poll})
+	h.render(w, "vote", voteData{Poll: poll, TurnstileKey: h.TurnstileKey})
 }
 
 // SubmitBallotHandler serves POST /polls/{key}/vote — records a ranked ballot.
@@ -44,11 +47,47 @@ func (h *Handler) SubmitBallotHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !h.AllowDevMultiVote {
+		if _, err := r.Cookie(voteCookieName(key)); err == nil {
+			h.render(w, "vote", voteData{
+				Poll:         poll,
+				Error:        "This browser already submitted a vote for this poll.",
+				TurnstileKey: h.TurnstileKey,
+			})
+			return
+		}
+	}
+
+	if !h.DisableTurnstile {
+		token := strings.TrimSpace(r.FormValue("cf-turnstile-response"))
+		if token == "" {
+			h.render(w, "vote", voteData{Poll: poll, Error: "Please complete the verification challenge.", TurnstileKey: h.TurnstileKey})
+			return
+		}
+
+		if h.Turnstile == nil {
+			log.Printf("SubmitBallotHandler: turnstile verifier is not configured")
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		ok, err := h.Turnstile.Verify(r.Context(), token, security.ClientIP(r))
+		if err != nil {
+			log.Printf("SubmitBallotHandler: turnstile verify: %v", err)
+			h.render(w, "vote", voteData{Poll: poll, Error: "Could not verify challenge. Please try again.", TurnstileKey: h.TurnstileKey})
+			return
+		}
+		if !ok {
+			h.render(w, "vote", voteData{Poll: poll, Error: "Verification failed. Please try again.", TurnstileKey: h.TurnstileKey})
+			return
+		}
+	}
+
 	// Parse the ordered ranking from the form: "rankings" is a
 	// comma-separated list of candidate IDs in the voter's preferred order.
 	rawRankings := strings.TrimSpace(r.FormValue("rankings"))
 	if rawRankings == "" {
-		h.render(w, "vote", voteData{Poll: poll, Error: "Please rank at least one candidate before submitting."})
+		h.render(w, "vote", voteData{Poll: poll, Error: "Please rank at least one candidate before submitting.", TurnstileKey: h.TurnstileKey})
 		return
 	}
 
@@ -65,7 +104,7 @@ func (h *Handler) SubmitBallotHandler(w http.ResponseWriter, r *http.Request) {
 	for _, p := range parts {
 		id, err := strconv.Atoi(strings.TrimSpace(p))
 		if err != nil || !validIDs[id] || seen[id] {
-			h.render(w, "vote", voteData{Poll: poll, Error: "Invalid ballot data. Please try again."})
+			h.render(w, "vote", voteData{Poll: poll, Error: "Invalid ballot data. Please try again.", TurnstileKey: h.TurnstileKey})
 			return
 		}
 		seen[id] = true
@@ -73,7 +112,7 @@ func (h *Handler) SubmitBallotHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(rankings) == 0 {
-		h.render(w, "vote", voteData{Poll: poll, Error: "Please rank at least one candidate before submitting."})
+		h.render(w, "vote", voteData{Poll: poll, Error: "Please rank at least one candidate before submitting.", TurnstileKey: h.TurnstileKey})
 		return
 	}
 
@@ -105,7 +144,23 @@ func (h *Handler) SubmitBallotHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	if !h.AllowDevMultiVote {
+		http.SetCookie(w, &http.Cookie{
+			Name:     voteCookieName(key),
+			Value:    "voted",
+			Path:     "/polls/" + key,
+			MaxAge:   int((30 * 24 * time.Hour).Seconds()),
+			HttpOnly: true,
+			Secure:   r.TLS != nil,
+			SameSite: http.SameSiteLaxMode,
+		})
+	}
+
 	http.Redirect(w, r, "/polls/"+key+"/thanks", http.StatusSeeOther)
+}
+
+func voteCookieName(key string) string {
+	return "rcv_vote_" + key
 }
 
 // ThanksHandler serves GET /polls/{key}/thanks — post-submission confirmation.

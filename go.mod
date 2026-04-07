@@ -3,6 +3,7 @@ module github.com/egp/rcv-app
 go 1.26.1
 
 require (
+	github.com/joho/godotenv v1.5.1
 	github.com/tursodatabase/libsql-client-go v0.0.0-20251219100830-236aa1ff8acc
 	modernc.org/sqlite v1.47.0
 )

@@ -104,6 +104,9 @@
     .submit-area {
       margin-top: 24px;
     }
+    .turnstile-wrap {
+      margin-bottom: 14px;
+    }
     .rank-count {
       font-size: 0.85rem;
       color: var(--navy-60);

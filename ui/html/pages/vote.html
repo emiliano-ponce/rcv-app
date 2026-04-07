@@ -2,6 +2,9 @@
 
 {{define "head"}}
   <link rel="stylesheet" href="/static/vote.css">
+  {{if .TurnstileKey}}
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  {{end}}
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1/Sortable.min.js"></script>
   <script src="/static/vote.js" defer></script>
 {{end}}
@@ -42,6 +45,11 @@
         id="vote-form"
       >
         <input type="hidden" name="rankings" id="rankings-input" />
+        {{if .TurnstileKey}}
+        <div class="turnstile-wrap">
+          <div class="cf-turnstile" data-sitekey="{{.TurnstileKey}}"></div>
+        </div>
+        {{end}}
         <button
           type="submit"
           class="btn btn-primary"

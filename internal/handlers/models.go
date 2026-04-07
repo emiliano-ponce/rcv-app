@@ -1,15 +1,24 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
 	"html/template"
 
 	"github.com/egp/rcv-app/internal/models"
 )
 
+type TurnstileVerifier interface {
+	Verify(ctx context.Context, token string, remoteIP string) (bool, error)
+}
+
 type Handler struct {
-	DB            *sql.DB
-	TemplateCache map[string]*template.Template
+	DB                *sql.DB
+	TemplateCache     map[string]*template.Template
+	Turnstile         TurnstileVerifier
+	TurnstileKey      string
+	AllowDevMultiVote bool
+	DisableTurnstile  bool
 }
 
 type homeData struct {
@@ -22,8 +31,9 @@ type pollCreatedData struct {
 }
 
 type voteData struct {
-	Poll  models.Poll
-	Error string
+	Poll         models.Poll
+	Error        string
+	TurnstileKey string
 }
 
 type thanksData struct {

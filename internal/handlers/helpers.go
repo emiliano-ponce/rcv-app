@@ -53,8 +53,12 @@ func NewHandler(db *sql.DB) *Handler {
 	}
 
 	return &Handler{
-		DB:            db,
-		TemplateCache: cache,
+		DB:                db,
+		TemplateCache:     cache,
+		Turnstile:         nil,
+		TurnstileKey:      "",
+		AllowDevMultiVote: false,
+		DisableTurnstile:  false,
 	}
 }
 
