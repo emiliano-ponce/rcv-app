@@ -13,6 +13,15 @@
       <main>{{ block "content" . }}{{ end }}</main>
 
       <footer></footer>
+      <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
+      <script>
+        kofiWidgetOverlay.draw("emiliano102517", {
+          type: "floating-chat",
+          "floating-chat.donateButton.text": "Tip me",
+          "floating-chat.donateButton.background-color": "#4f46e5",
+          "floating-chat.donateButton.text-color": "#fff",
+        });
+      </script>
     </body>
   </html>
 {{ end }}

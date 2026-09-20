@@ -270,6 +270,9 @@ func TestTabulate_BordaResolvesToNonLowestID(t *testing.T) {
 		// straight through to lowest-ID.
 		t.Errorf("round 1 eliminated: got %d, want 2 (Borda should override lowest-ID here)", r1.EliminatedID)
 	}
+	if r1.TiebreakMethod != "borda" {
+		t.Errorf("round 1 tiebreak method: got %q, want %q", r1.TiebreakMethod, "borda")
+	}
 }
 
 func TestTabulate_BordaAlsoTiedFallsBackToLowestID(t *testing.T) {
@@ -311,6 +314,9 @@ func TestTabulate_BordaAlsoTiedFallsBackToLowestID(t *testing.T) {
 	r1 := rounds[0]
 	if r1.EliminatedID != 1 {
 		t.Errorf("round 1 eliminated: got %d, want 1 (lowest-ID fallback after Borda tie)", r1.EliminatedID)
+	}
+	if r1.TiebreakMethod != "lowest-id" {
+		t.Errorf("round 1 tiebreak method: got %q, want %q", r1.TiebreakMethod, "lowest-id")
 	}
 }
 

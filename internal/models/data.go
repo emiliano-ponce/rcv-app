@@ -31,4 +31,12 @@ type RoundResult struct {
 	EliminatedID  int
 	HasEliminated bool
 	IsWinnerRound bool
+
+	// TiedCandidateIDs holds the candidates tied at the round minimum before
+	// any tiebreak was applied. Length <= 1 means no tie occurred.
+	TiedCandidateIDs []int
+	// TiebreakMethod is "" (no tie), "borda", or "lowest-id".
+	TiebreakMethod string
+	// BordaScores holds each tied candidate's Borda score, populated only when a tiebreak occurred.
+	BordaScores map[int]int
 }

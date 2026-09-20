@@ -100,6 +100,16 @@ func (h *Handler) CreatePollHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	http.SetCookie(w, &http.Cookie{
+		Name:     ownerCookieName(key),
+		Value:    "owner",
+		Path:     "/polls/" + key,
+		MaxAge:   int((30 * 24 * time.Hour).Seconds()),
+		HttpOnly: true,
+		Secure:   r.TLS != nil,
+		SameSite: http.SameSiteLaxMode,
+	})
+
 	http.Redirect(w, r, "/polls/"+key+"/manage", http.StatusSeeOther)
 }
 
@@ -123,7 +133,7 @@ func (h *Handler) PollManageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	baseURL := scheme + "://" + r.Host
 
-	h.render(w, "manage-poll", pollCreatedData{Poll: poll, BaseURL: baseURL})
+	h.render(w, "manage-poll", pollCreatedData{Poll: poll, BaseURL: baseURL, HasVoted: hasVoted(r, key)})
 }
 
 // PollManageMetaHandler serves PATCH /polls/{key}

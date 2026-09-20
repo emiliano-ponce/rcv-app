@@ -49,6 +49,10 @@
               </div>
             {{ end }}
           </div>
+
+          {{ if .Explanation }}
+          <p class="round-explanation"><i class="fas fa-circle-info"></i> {{ .Explanation }}</p>
+          {{ end }}
         </div>
       {{ end }}
     </div>

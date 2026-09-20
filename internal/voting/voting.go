@@ -74,15 +74,18 @@ func Tabulate(candidates []int, ballots []models.Ballot) (int, []models.RoundRes
 			}
 		}
 
-		loserID := breakTie(tied, activeCandidates, ballots)
+		loserID, method, scores := breakTie(tied, activeCandidates, ballots)
 		delete(activeCandidates, loserID)
 
 		rounds = append(rounds, models.RoundResult{
-			RoundNumber:   r,
-			VoteCounts:    counts,
-			TotalVotes:    totalVotes,
-			EliminatedID:  loserID,
-			HasEliminated: true,
+			RoundNumber:      r,
+			VoteCounts:       counts,
+			TotalVotes:       totalVotes,
+			EliminatedID:     loserID,
+			HasEliminated:    true,
+			TiedCandidateIDs: tied,
+			TiebreakMethod:   method,
+			BordaScores:      scores,
 		})
 	}
 
@@ -104,12 +107,21 @@ func Tabulate(candidates []int, ballots []models.Ballot) (int, []models.RoundRes
 //     (only active candidates contribute to the positional score).
 //  2. Eliminate the candidate with the lowest Borda score.
 //  3. If Borda scores are equal, eliminate the candidate with the lowest ID.
-func breakTie(tied []int, activeCandidates map[int]bool, ballots []models.Ballot) int {
+//
+// Returns the eliminated candidate's ID, the method used to resolve the tie
+// ("" if there was no tie, "borda", or "lowest-id"), and the tied candidates'
+// Borda scores (nil if there was no tie).
+func breakTie(tied []int, activeCandidates map[int]bool, ballots []models.Ballot) (int, string, map[int]int) {
 	if len(tied) == 1 {
-		return tied[0]
+		return tied[0], "", nil
 	}
 
 	bordaScores := computeBordaScores(activeCandidates, ballots)
+
+	tiedScores := make(map[int]int, len(tied))
+	for _, id := range tied {
+		tiedScores[id] = bordaScores[id]
+	}
 
 	minBorda := -1
 	for _, id := range tied {
@@ -126,9 +138,13 @@ func breakTie(tied []int, activeCandidates map[int]bool, ballots []models.Ballot
 		}
 	}
 
+	if len(bordaTied) == 1 {
+		return bordaTied[0], "borda", tiedScores
+	}
+
 	// Fall back to lowest ID if Borda didn't resolve the tie.
 	sort.Ints(bordaTied)
-	return bordaTied[0]
+	return bordaTied[0], "lowest-id", tiedScores
 }
 
 // computeBordaScores assigns each active candidate a score based on their

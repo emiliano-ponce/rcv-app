@@ -80,17 +80,16 @@ func main() {
 		voteSubmitHandler = security.WrapWithRateLimit(voteLimiter, voteSubmitHandler)
 	}
 	mux.HandleFunc("POST /polls/{key}/vote", voteSubmitHandler)
-	mux.HandleFunc("GET /polls/{key}/thanks", h.ThanksHandler)
 	mux.HandleFunc("GET /polls/{key}/results", h.ResultsHandler)
 	mux.HandleFunc("GET /polls/{key}/results/fragment", h.ResultsFragmentHandler)
 
 	mux.HandleFunc("GET /polls/{key}/manage", h.PollManageHandler)
-	mux.HandleFunc("PATCH /polls/{key}", h.PollManageMetaHandler)
-	mux.HandleFunc("DELETE /polls/{key}", h.PollManageDeleteHandler)
-	mux.HandleFunc("POST /polls/{key}/candidates", h.PollManageAddCandidateHandler)
-	mux.HandleFunc("PATCH /polls/{key}/candidates/{id}", h.PollManageUpdateCandidateHandler)
-	mux.HandleFunc("DELETE /polls/{key}/candidates/{id}", h.PollManageDeleteCandidateHandler)
-	mux.HandleFunc("POST /polls/{key}/close", h.PollManageCloseHandler)
+	mux.HandleFunc("PATCH /polls/{key}", security.WrapRequireSameOrigin(h.PollManageMetaHandler))
+	mux.HandleFunc("DELETE /polls/{key}", security.WrapRequireSameOrigin(h.PollManageDeleteHandler))
+	mux.HandleFunc("POST /polls/{key}/candidates", security.WrapRequireSameOrigin(h.PollManageAddCandidateHandler))
+	mux.HandleFunc("PATCH /polls/{key}/candidates/{id}", security.WrapRequireSameOrigin(h.PollManageUpdateCandidateHandler))
+	mux.HandleFunc("DELETE /polls/{key}/candidates/{id}", security.WrapRequireSameOrigin(h.PollManageDeleteCandidateHandler))
+	mux.HandleFunc("POST /polls/{key}/close", security.WrapRequireSameOrigin(h.PollManageCloseHandler))
 
 	port := strings.TrimSpace(os.Getenv("PORT"))
 	if port == "" {

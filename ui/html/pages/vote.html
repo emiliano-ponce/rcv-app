@@ -16,12 +16,28 @@
       {{if .Poll.Description}}
       <p class="poll-desc text-muted">{{.Poll.Description}}</p>
       {{end}}
+      {{if .IsOwner}}
+      <p class="text-sm">
+        <a href="/polls/{{.Poll.Key}}/manage" style="color: var(--indigo)">Manage this poll →</a>
+      </p>
+      {{end}}
     </div>
 
     {{if .Error}}
     <div class="alert alert-error">{{.Error}}</div>
     {{end}}
 
+    {{if .AlreadyVoted}}
+    <div class="card">
+      <h3 style="margin-bottom: 4px">You've already voted</h3>
+      <p class="text-muted text-sm">
+        This browser already submitted a ballot for this poll.
+      </p>
+      <p style="margin-top: 16px">
+        <a href="/polls/{{.Poll.Key}}/results" class="btn btn-primary">View results →</a>
+      </p>
+    </div>
+    {{else}}
     <div class="card">
       <h3 style="margin-bottom: 4px">Rank the candidates</h3>
       <p class="text-muted text-sm" style="margin-bottom: 16px">
@@ -60,6 +76,7 @@
         <p class="rank-count" id="rank-count"></p>
       </form>
     </div>
+    {{end}}
 
     <p class="text-muted text-sm" style="margin-top: 16px">
       <a href="/polls/{{.Poll.Key}}/results" style="color: var(--indigo)"

@@ -30,7 +30,14 @@ func (h *Handler) VoteHandler(w http.ResponseWriter, r *http.Request) {
 		poll.Candidates[i], poll.Candidates[j] = poll.Candidates[j], poll.Candidates[i]
 	})
 
-	h.render(w, "vote", voteData{Poll: poll, TurnstileKey: h.TurnstileKey})
+	alreadyVoted := !h.AllowDevMultiVote && hasVoted(r, key)
+
+	h.render(w, "vote", voteData{
+		Poll:         poll,
+		TurnstileKey: h.TurnstileKey,
+		AlreadyVoted: alreadyVoted,
+		IsOwner:      isPollOwner(r, key),
+	})
 }
 
 // SubmitBallotHandler serves POST /polls/{key}/vote — records a ranked ballot.
@@ -156,25 +163,24 @@ func (h *Handler) SubmitBallotHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	http.Redirect(w, r, "/polls/"+key+"/thanks", http.StatusSeeOther)
+	// One-time flag read by ResultsHandler to show a "Ballot received!" toast.
+	http.SetCookie(w, &http.Cookie{
+		Name:     toastCookieName(key),
+		Value:    "1",
+		Path:     "/polls/" + key,
+		MaxAge:   10,
+		HttpOnly: true,
+		Secure:   r.TLS != nil,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	http.Redirect(w, r, "/polls/"+key+"/results", http.StatusSeeOther)
 }
 
 func voteCookieName(key string) string {
 	return "rcv_vote_" + key
 }
 
-// ThanksHandler serves GET /polls/{key}/thanks — post-submission confirmation.
-func (h *Handler) ThanksHandler(w http.ResponseWriter, r *http.Request) {
-	key := r.PathValue("key")
-	poll, err := h.getPollByKey(key)
-	if err == sql.ErrNoRows {
-		http.NotFound(w, r)
-		return
-	}
-	if err != nil {
-		log.Printf("ThanksHandler: %v", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
-		return
-	}
-	h.render(w, "thanks", thanksData{Poll: poll})
+func toastCookieName(key string) string {
+	return "rcv_toast_" + key
 }

@@ -316,3 +316,92 @@ func TestSubmitBallotHandler_DevMultiVoteAllowsUnlimited(t *testing.T) {
 		t.Fatalf("ballot count = %d, want 2", got)
 	}
 }
+
+func TestSubmitBallotHandler_RedirectsToResultsWithToastCookie(t *testing.T) {
+	h, db := setupTestHandler(t)
+	defer db.Close()
+	seedPollWithCandidates(t, db, "abcd1234")
+	h.Turnstile = stubTurnstile{ok: true}
+
+	body := url.Values{}
+	body.Set("rankings", "1,2")
+	body.Set("cf-turnstile-response", "token-ok")
+
+	req := httptest.NewRequest(http.MethodPost, "/polls/abcd1234/vote", strings.NewReader(body.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.SetPathValue("key", "abcd1234")
+	w := httptest.NewRecorder()
+
+	h.SubmitBallotHandler(w, req)
+
+	if loc := w.Header().Get("Location"); loc != "/polls/abcd1234/results" {
+		t.Fatalf("redirect location = %q, want %q", loc, "/polls/abcd1234/results")
+	}
+
+	found := false
+	for _, c := range w.Result().Cookies() {
+		if c.Name == toastCookieName("abcd1234") {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("expected toast cookie to be set")
+	}
+}
+
+func TestPollManageCloseHandler_AllowedWithoutOwnerCookie(t *testing.T) {
+	// Ownership is cosmetic only (Manage link visibility) — anyone with the
+	// manage URL can still act on the poll, matching this app's no-accounts model.
+	h, db := setupTestHandler(t)
+	defer db.Close()
+	seedPollWithCandidates(t, db, "abcd1234")
+
+	req := httptest.NewRequest(http.MethodPost, "/polls/abcd1234/close", nil)
+	req.SetPathValue("key", "abcd1234")
+	w := httptest.NewRecorder()
+
+	h.PollManageCloseHandler(w, req)
+
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("status = %d, want %d", w.Code, http.StatusNoContent)
+	}
+}
+
+func TestWrapRequireSameOrigin_RejectsCrossOrigin(t *testing.T) {
+	called := false
+	routed := security.WrapRequireSameOrigin(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	req := httptest.NewRequest(http.MethodPost, "/polls/abcd1234/close", nil)
+	req.Host = "rcv-app.example"
+	req.Header.Set("Origin", "https://evil.example")
+	w := httptest.NewRecorder()
+
+	routed(w, req)
+
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("status = %d, want %d", w.Code, http.StatusForbidden)
+	}
+	if called {
+		t.Fatal("handler should not have been called for cross-origin request")
+	}
+}
+
+func TestWrapRequireSameOrigin_AllowsSameOrigin(t *testing.T) {
+	routed := security.WrapRequireSameOrigin(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	req := httptest.NewRequest(http.MethodPost, "/polls/abcd1234/close", nil)
+	req.Host = "rcv-app.example"
+	req.Header.Set("Origin", "https://rcv-app.example")
+	w := httptest.NewRecorder()
+
+	routed(w, req)
+
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("status = %d, want %d", w.Code, http.StatusNoContent)
+	}
+}

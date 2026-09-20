@@ -2,10 +2,15 @@
 
 {{ define "head" }}
   <link rel="stylesheet" href="/static/results.css" />
+  <script src="/static/results.js" defer></script>
 {{ end }}
 
 {{ define "content" }}
   <div class="page-wide">
+    {{ if .ShowVotedToast }}
+    <div id="voted-toast" class="toast">Ballot received!</div>
+    {{ end }}
+
     <div class="poll-header">
       <div class="header-row">
         <div>
@@ -19,9 +24,19 @@
           Live results
         </span>
       </div>
-      <a href="/polls/{{ .Poll.Key }}" class="btn btn-ghost btn-sm"
-        >Cast a vote →</a
-      >
+      <div class="header-actions">
+        {{ if .HasVoted }}
+        <span class="badge badge-muted">You've voted</span>
+        {{ else }}
+        <a href="/polls/{{ .Poll.Key }}" class="btn btn-ghost btn-sm"
+          >Cast a vote →</a
+        >
+        {{ end }}
+        {{ if .IsOwner }}
+        <a href="/polls/{{ .Poll.Key }}/manage" class="btn btn-ghost btn-sm">Manage poll</a>
+        {{ end }}
+        <button type="button" id="toggle-explanations" class="btn btn-sm">Show round details</button>
+      </div>
     </div>
 
     <!-- HTMX live-polling fragment target -->

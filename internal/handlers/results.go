@@ -27,6 +27,22 @@ func (h *Handler) ResultsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	data.IsOwner = isPollOwner(r, key)
+	data.HasVoted = hasVoted(r, key)
+
+	if _, err := r.Cookie(toastCookieName(key)); err == nil {
+		data.ShowVotedToast = true
+		http.SetCookie(w, &http.Cookie{
+			Name:     toastCookieName(key),
+			Value:    "",
+			Path:     "/polls/" + key,
+			MaxAge:   -1,
+			HttpOnly: true,
+			Secure:   r.TLS != nil,
+			SameSite: http.SameSiteLaxMode,
+		})
+	}
+
 	h.render(w, "results", data)
 }
 

@@ -26,18 +26,17 @@ type homeData struct {
 }
 
 type pollCreatedData struct {
-	Poll    models.Poll
-	BaseURL string
+	Poll     models.Poll
+	BaseURL  string
+	HasVoted bool
 }
 
 type voteData struct {
 	Poll         models.Poll
 	Error        string
 	TurnstileKey string
-}
-
-type thanksData struct {
-	Poll models.Poll
+	AlreadyVoted bool
+	IsOwner      bool
 }
 
 // candidateVote pairs a candidate name with their vote count for a round.
@@ -58,13 +57,17 @@ type roundView struct {
 	EliminatedName string
 	HasEliminated  bool
 	IsWinnerRound  bool
+	Explanation    string
 }
 
 type resultsData struct {
-	Poll        models.Poll
-	Rounds      []roundView
-	WinnerID    int
-	WinnerName  string
-	BallotCount int
-	HasBallots  bool
+	Poll           models.Poll
+	Rounds         []roundView
+	WinnerID       int
+	WinnerName     string
+	BallotCount    int
+	HasBallots     bool
+	IsOwner        bool
+	HasVoted       bool
+	ShowVotedToast bool
 }

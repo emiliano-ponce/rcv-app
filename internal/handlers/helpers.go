@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/egp/rcv-app/internal/models"
 	"github.com/egp/rcv-app/internal/voting"
@@ -229,6 +230,7 @@ func (h *Handler) buildResultsData(poll models.Poll) (resultsData, error) {
 			EliminatedName: nameMap[r.EliminatedID],
 			HasEliminated:  r.HasEliminated,
 			IsWinnerRound:  r.IsWinnerRound,
+			Explanation:    explainRound(r, nameMap),
 		}
 
 		for id, votes := range r.VoteCounts {
@@ -257,4 +259,58 @@ func (h *Handler) buildResultsData(poll models.Poll) (resultsData, error) {
 	}
 
 	return data, nil
+}
+
+// explainRound produces a plain-language explanation of what happened in a round.
+func explainRound(r models.RoundResult, nameMap map[int]string) string {
+	if r.IsWinnerRound {
+		return fmt.Sprintf("This round's leading candidate received more than half of the active votes (%d total) and was declared the winner.", r.TotalVotes)
+	}
+	if !r.HasEliminated {
+		return ""
+	}
+
+	votes := r.VoteCounts[r.EliminatedID]
+	name := nameMap[r.EliminatedID]
+
+	if len(r.TiedCandidateIDs) <= 1 {
+		return fmt.Sprintf("%s received the fewest first-choice votes this round (%d of %d) and was eliminated.", name, votes, r.TotalVotes)
+	}
+
+	tiedNames := make([]string, 0, len(r.TiedCandidateIDs))
+	for _, id := range r.TiedCandidateIDs {
+		tiedNames = append(tiedNames, nameMap[id])
+	}
+	tiedList := strings.Join(tiedNames, ", ")
+
+	switch r.TiebreakMethod {
+	case "borda":
+		return fmt.Sprintf(
+			"%s were tied with %d first-choice votes each. %s had the lowest Borda count (%d points) among the tied candidates and was eliminated.",
+			tiedList, votes, name, r.BordaScores[r.EliminatedID],
+		)
+	case "lowest-id":
+		return fmt.Sprintf(
+			"%s were tied with %d first-choice votes and equal Borda scores (%d points each). %s was eliminated as the lowest-numbered candidate among those tied.",
+			tiedList, votes, r.BordaScores[r.EliminatedID], name,
+		)
+	default:
+		return fmt.Sprintf("%s received the fewest first-choice votes this round (%d of %d) and was eliminated.", name, votes, r.TotalVotes)
+	}
+}
+
+func ownerCookieName(key string) string {
+	return "rcv_owner_" + key
+}
+
+// isPollOwner reports whether the request carries the cookie set for the browser that created the poll.
+func isPollOwner(r *http.Request, key string) bool {
+	_, err := r.Cookie(ownerCookieName(key))
+	return err == nil
+}
+
+// hasVoted reports whether the request carries the cookie set after a successful ballot submission.
+func hasVoted(r *http.Request, key string) bool {
+	_, err := r.Cookie(voteCookieName(key))
+	return err == nil
 }
