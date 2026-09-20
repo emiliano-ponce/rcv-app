@@ -16,6 +16,8 @@
 
 .share-section {
   margin-top: 28px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ── Success icon ───────────────────────────────────────────────────────── */
@@ -40,6 +42,7 @@
   margin-top: 24px;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
 }
 
 /* ── Manage header ──────────────────────────────────────────────────────── */

@@ -1,39 +1,45 @@
-{{define "base"}}
-<!doctype html>
-<html lang="en">
+{{ define "base" }}
+  <!doctype html>
+  <html lang="en">
     <head>
-        <title>{{block "title" .}}RankedChoice{{end}}</title>
-        {{template "base_head" .}} {{block "head" .}}{{end}}
+      <title>{{ block "title" . }}RankedChoice{{ end }}</title>
+      {{ template "base_head" . }}
+      {{ block "head" . }}{{ end }}
     </head>
     <body>
-        {{template "nav" .}}
+      {{ template "nav" . }}
 
-        <main>{{block "content" .}} {{end}}</main>
 
-        <footer></footer>
+      <main>{{ block "content" . }}{{ end }}</main>
+
+      <footer></footer>
     </body>
-</html>
-{{end}}
+  </html>
+{{ end }}
 
-{{define "base_head"}}
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<script
+{{ define "base_head" }}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script
     src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"
     integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz"
     crossorigin="anonymous"
-></script>
-<link rel="stylesheet" href="/static/main.css" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link
+  ></script>
+  <link rel="stylesheet" href="/static/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap"
     rel="stylesheet"
-/>
-{{end}}
+  />
+  <script
+    src="https://kit.fontawesome.com/7bf8630b35.js"
+    crossorigin="anonymous"
+  ></script>
+{{ end }}
 
-{{define "nav"}}
-<nav>
+{{ define "nav" }}
+  <nav>
     <a href="/" class="wordmark">Ranked<span>Choice</span></a>
-</nav>
-{{end}}
+  </nav>
+{{ end }}

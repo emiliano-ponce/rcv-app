@@ -45,6 +45,7 @@
         <p class="text-muted text-sm">Click a name to rename · × to remove</p>
       {{ end }}
 
+
       <div class="candidates-list" id="candidates-list">
         {{ range .Poll.Candidates }}
           <div class="candidate-row" data-id="{{ .ID }}">
@@ -55,14 +56,14 @@
                 title="Rename"
                 aria-label="Rename {{ .Name }}"
               >
-                ✎
+                <i class="fas fa-pencil"></i>
               </button>
               <button
                 class="btn-icon delete-btn"
                 title="Remove"
                 aria-label="Remove {{ .Name }}"
               >
-                ×
+                <i class="fas fa-xmark"></i>
               </button>
             {{ end }}
           </div>
@@ -82,7 +83,7 @@
             maxlength="100"
             class="font-mono"
           />
-          <button class="btn btn-ghost btn-sm" type="submit">Add</button>
+          <button class="btn btn-ghost btn-sm" type="submit"><i class="fas fa-plus"></i> Add</button>
         </form>
       {{ end }}
     </div>
@@ -103,6 +104,7 @@
           class="btn btn-ghost btn-sm copy-btn"
           onclick="copyText('share-link', this)"
         >
+          <i class="fas fa-copy"></i>
           Copy
         </button>
       </div>
@@ -114,37 +116,42 @@
         </p>
         <div class="poll-key">{{ .Poll.Key }}</div>
         <button
-          class="btn btn-ghost btn-sm"
+          class="btn btn-ghost btn-sm ml-auto"
           onclick="navigator.clipboard.writeText('{{ .Poll.Key }}').then(()=>this.textContent='Copied!')"
         >
+          <i class="fas fa-copy"></i>
           Copy key
         </button>
       </div>
     </div>
 
     <div class="action-row">
-      <a href="/polls/{{ .Poll.Key }}" class="btn btn-primary"
-        >Cast my vote →</a
+      <button
+        class="btn btn-danger"
+        id="delete-poll-btn"
+        onclick="deletePoll(this)"
       >
-      <a href="/polls/{{ .Poll.Key }}/results" class="btn btn-ghost"
-        >View results</a
-      >
+        <i class="far fa-trash-can"></i>
+        Delete poll
+      </button>
       {{ if not .Poll.ClosedAt.Valid }}
         <button
           class="btn btn-danger outlined"
           id="close-poll-btn"
           onclick="closePoll(this)"
         >
+          <i class="fas fa-lock"></i>
           Close poll
         </button>
       {{ end }}
-      <button
-        class="btn btn-danger"
-        id="delete-poll-btn"
-        onclick="deletePoll(this)"
+      <a href="/polls/{{ .Poll.Key }}/results" class="btn btn-ghost"
+        ><i class="fas fa-chart-bar"></i>
+        View results</a
       >
-        Delete poll
-      </button>
+      <a href="/polls/{{ .Poll.Key }}" class="btn btn-primary"
+        ><i class="fas fa-check-to-slot"></i>
+        Cast my vote </a
+      >
     </div>
   </div>
 {{ end }}

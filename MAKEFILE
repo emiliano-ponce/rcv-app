@@ -1,7 +1,7 @@
 BINARY_NAME=rcv-app
 MAIN_PATH=./cmd/server/main.go
 
-.PHONY: build run tidy clean
+.PHONY: build run dev tidy clean
 
 tidy:
 	go mod tidy
@@ -11,6 +11,9 @@ build:
 
 run:
 	go run ${MAIN_PATH}
+
+dev: tidy
+	air -c .air.toml
 
 clean:
 	go clean
@@ -24,7 +27,5 @@ lint:
 
 test:
 	go test ./...
-
-dev: tidy run
 
 check: fmt lint
