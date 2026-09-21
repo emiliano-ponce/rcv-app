@@ -1,5 +1,7 @@
 {{define "title"}}Vote — {{.Poll.Title}}{{end}}
 
+{{define "robots"}}noindex, nofollow{{end}}
+
 {{define "head"}}
   <link rel="stylesheet" href="/static/vote.css">
   {{if .TurnstileKey}}

@@ -3,6 +3,22 @@
   <html lang="en">
     <head>
       <title>{{ block "title" . }}RankedChoice{{ end }}</title>
+      <meta
+        name="description"
+        content="{{ block "description" . }}RankedChoice is a free, easy-to-use ranked choice voting tool. Create a poll, share the link, and get instant results.{{ end }}"
+      />
+      <meta name="robots" content="{{ block "robots" . }}index, follow{{ end }}" />
+      <meta property="og:type" content="website" />
+      <meta property="og:site_name" content="RankedChoice" />
+      <meta property="og:title" content="{{ template "title" . }}" />
+      <meta property="og:description" content="{{ template "description" . }}" />
+      <meta name="twitter:card" content="summary" />
+      <meta name="twitter:title" content="{{ template "title" . }}" />
+      <meta name="twitter:description" content="{{ template "description" . }}" />
+      <link
+        rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>🗳️</text></svg>"
+      />
       {{ template "base_head" . }}
       {{ block "head" . }}{{ end }}
     </head>
@@ -50,5 +66,10 @@
 {{ define "nav" }}
   <nav>
     <a href="/" class="wordmark">Ranked<span>Choice</span></a>
+    <div class="nav-links">
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+      <a href="https://github.com/emiliano-ponce/rcv-app" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+    </div>
   </nav>
 {{ end }}

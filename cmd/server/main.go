@@ -72,6 +72,10 @@ func main() {
 	mux.Handle("GET /static/", http.StripPrefix("/static/", fs))
 
 	mux.HandleFunc("GET /", h.HomeHandler)
+	mux.HandleFunc("GET /about", h.AboutHandler)
+	mux.HandleFunc("GET /contact", h.ContactHandler)
+	mux.HandleFunc("GET /robots.txt", h.RobotsHandler)
+	mux.HandleFunc("GET /sitemap.xml", h.SitemapHandler)
 	mux.HandleFunc("POST /find", h.FindPollHandler)
 	mux.HandleFunc("POST /polls", security.WrapWithRateLimit(createLimiter, h.CreatePollHandler))
 	mux.HandleFunc("GET /polls/{key}", h.VoteHandler)

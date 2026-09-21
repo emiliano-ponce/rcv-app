@@ -42,6 +42,7 @@ nav {
   padding: 0 24px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   height: 60px;
 }
 nav a.wordmark {
@@ -55,17 +56,30 @@ nav a.wordmark {
 nav a.wordmark span {
   color: var(--indigo);
 }
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
+.nav-links a {
+  color: var(--navy-60);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.nav-links a:hover {
+  color: var(--indigo);
+}
 
 /* ── Page shell ── */
 .page {
   max-width: 840px;
   margin: 0 auto;
-  padding: 48px 24px 96px;
+  padding: 48px 24px;
 }
 .page-wide {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 48px 24px 96px;
+  padding: 48px 24px;
 }
 
 /* ── Typography ── */
