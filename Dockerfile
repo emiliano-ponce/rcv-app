@@ -15,6 +15,7 @@ COPY --chown=nonroot:nonroot db/migrations /app/db/migrations
 COPY --chown=nonroot:nonroot ui /app/ui
 
 ENV APP_ENV=production
+ENV PORT=10000
 EXPOSE 10000
 
 CMD ["/app/rcv-app"]
