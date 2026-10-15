@@ -11,7 +11,7 @@ services:
       PORT: "8080"
     networks:
       - edge
-    # No ports published to the host — Caddy reaches this container directly
+    # No ports published to the host. The shared Caddy proxy (emiliano-ponce/homelab) reaches this container
     # over the shared "edge" network by its service name (rcv-app:8080).
 
 networks:

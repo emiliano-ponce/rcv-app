@@ -70,6 +70,17 @@ docker run -p 10000:10000 rcv-app
 
 The runtime image sets `APP_ENV=production` and `PORT=10000`, and exposes port 10000. In production, also set `DATABASE_URL`, `DATABASE_AUTH_TOKEN` (for a remote libSQL database), and the Turnstile keys.
 
+### Self-hosting
+
+`deploy/docker-compose.yml` runs the app on a home server behind the shared reverse proxy (Caddy plus a Cloudflare Tunnel), which lives in the separate [homelab](https://github.com/emiliano-ponce/homelab) repo. The container publishes no ports; Caddy reaches it as `rcv-app:8080` over the external `edge` Docker network.
+
+```bash
+docker network create edge 2>/dev/null || true
+cd deploy
+cp .env.example .env   # fill in Turso and Turnstile values
+docker compose up -d --build
+```
+
 ## Configuration
 
 When `DATABASE_URL` is unset, environment variables are loaded from a `.env` file if one exists. See `.env.example` for the full list.
@@ -149,6 +160,7 @@ GitHub Actions (`.github/workflows/build-and-test.yml`) runs `go build -v ./...`
 │   ├── html/                 # base.html layout, pages/, partials/
 │   └── static/               # Page CSS and JS
 ├── db/migrations/            # SQL migrations, applied automatically at startup
+├── deploy/                  # docker-compose.yml for self-hosting behind the shared proxy
 ├── Dockerfile
 ├── Makefile
 ├── .air.toml                 # Live-reload config
