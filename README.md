@@ -167,3 +167,35 @@ GitHub Actions (`.github/workflows/build-and-test.yml`) runs `go build -v ./...`
 ├── .env.example              # Sample environment configuration
 └── AGENTS.md                 # Architecture and conventions for AI coding agents
 ```
+
+## Continuous deployment
+
+Every push to `main` runs the existing **Go** workflow on GitHub. If it passes, `.github/workflows/deploy.yml` runs on a self-hosted runner on the home server (Ubuntu laptop), which rebuilds and restarts the `rcv-app` container. Caddy and the Cloudflare tunnel from [emiliano-ponce/homelab](https://github.com/emiliano-ponce/homelab) keep routing to it unchanged. Self-hosted runners are free, even for private repos (no Actions minutes used).
+
+### One-time laptop setup
+
+1. **Install the runner.** In GitHub: *Settings → Actions → Runners → New self-hosted runner*, pick **Linux / x64**, and run the download commands it shows in a new folder (e.g. `~/actions-runner-rcv-app`). When configuring, add a label:
+   ```sh
+   ./config.sh --url https://github.com/emiliano-ponce/rcv-app --token <TOKEN> --labels rcv-app
+   ```
+2. **Run it as a service** so it survives reboots:
+   ```sh
+   sudo ./svc.sh install && sudo ./svc.sh start
+   ```
+3. **Let the runner use Docker.** Add the runner's user to the `docker` group, then restart the service:
+   ```sh
+   sudo usermod -aG docker $USER
+   sudo ./svc.sh stop && sudo ./svc.sh start
+   ```
+4. **Put the production env file in its fixed home** (never committed):
+   ```sh
+   mkdir -p ~/apps/rcv-app && cp ~/rcv-app/deploy/.env ~/apps/rcv-app/.env && chmod 600 ~/apps/rcv-app/.env
+   ```
+   The compose file reads `${APP_ENV_FILE:-.env}`, so local `docker compose up` in `deploy/` still uses `deploy/.env`.
+5. **Cut over once.** Stop the manually started stack, then let the first deploy bring it back:
+   ```sh
+   cd ~/rcv-app/deploy && docker compose down
+   ```
+   Then trigger *Actions → Deploy → Run workflow* (or merge to `main`). The compose project is pinned to `name: rcv-app`, so later manual runs from `~/rcv-app/deploy` manage the same stack instead of creating a duplicate.
+
+To change production config, edit `~/apps/rcv-app/.env` and re-run the Deploy workflow.

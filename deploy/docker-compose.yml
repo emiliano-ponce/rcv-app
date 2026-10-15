@@ -1,3 +1,4 @@
+name: rcv-app
 services:
   rcv-app:
     build:
@@ -6,7 +7,7 @@ services:
     container_name: rcv-app
     restart: unless-stopped
     env_file:
-      - .env
+      - ${APP_ENV_FILE:-.env}
     environment:
       PORT: "8080"
     networks:
