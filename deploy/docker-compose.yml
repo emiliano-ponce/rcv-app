@@ -1,0 +1,19 @@
+services:
+  rcv-app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: rcv-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PORT: "8080"
+    networks:
+      - edge
+    # No ports published to the host — Caddy reaches this container directly
+    # over the shared "edge" network by its service name (rcv-app:8080).
+
+networks:
+  edge:
+    external: true
