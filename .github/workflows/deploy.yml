@@ -1,0 +1,32 @@
+name: Deploy
+
+# Runs after the existing "Go" workflow finishes on main, and deploys only if it passed.
+on:
+  workflow_run:
+    workflows: ["Go"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-rcv-app
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: [self-hosted, rcv-app]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - name: Check env file
+        run: |
+          export APP_ENV_FILE="$HOME/apps/rcv-app/.env"
+          test -f "$APP_ENV_FILE" || { echo "Missing $APP_ENV_FILE"; exit 1; }
+      - name: Build and restart
+        run: |
+          export APP_ENV_FILE="$HOME/apps/rcv-app/.env"
+          docker compose -p rcv-app -f deploy/docker-compose.yml up -d --build
+      - name: Prune old images
+        run: docker image prune -f
