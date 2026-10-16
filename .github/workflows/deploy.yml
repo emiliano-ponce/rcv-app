@@ -22,11 +22,11 @@ jobs:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - name: Check env file
         run: |
-          export APP_ENV_FILE="$HOME/apps/rcv-app/.env"
+          export APP_ENV_FILE="$HOME/www/rcv-app/.env"
           test -f "$APP_ENV_FILE" || { echo "Missing $APP_ENV_FILE"; exit 1; }
       - name: Build and restart
         run: |
-          export APP_ENV_FILE="$HOME/apps/rcv-app/.env"
+          export APP_ENV_FILE="$HOME/www/rcv-app/.env"
           docker compose -p rcv-app -f deploy/docker-compose.yml up -d --build
       - name: Prune old images
         run: docker image prune -f
