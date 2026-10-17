@@ -21,8 +21,12 @@
 }
 .toast {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  max-width: calc(100vw - 32px);
+  width: max-content;
+  text-align: center;
   background: var(--emerald, #10b981);
   color: #fff;
   padding: 12px 20px;
