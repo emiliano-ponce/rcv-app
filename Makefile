@@ -1,5 +1,6 @@
 BINARY_NAME=rcv-app
 MAIN_PATH=./cmd/server/main.go
+AIR_CONFIG=$(if $(filter Windows_NT,$(OS)),.air.windows.toml,.air.toml)
 
 .PHONY: build run dev tidy clean
 
@@ -13,7 +14,7 @@ run:
 	go run ${MAIN_PATH}
 
 dev: tidy
-	air -c .air.toml
+	air -c $(AIR_CONFIG)
 
 clean:
 	go clean
