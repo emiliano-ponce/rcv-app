@@ -70,17 +70,6 @@ docker run -p 10000:10000 rcv-app
 
 The runtime image sets `APP_ENV=production` and `PORT=10000`, and exposes port 10000. In production, also set `DATABASE_URL`, `DATABASE_AUTH_TOKEN` (for a remote libSQL database), and the Turnstile keys.
 
-### Self-hosting
-
-`deploy/docker-compose.yml` runs the app on a home server behind the shared reverse proxy (Caddy plus a Cloudflare Tunnel), which lives in the separate [homelab](https://github.com/emiliano-ponce/homelab) repo. The container publishes no ports; Caddy reaches it as `rcv-app:8080` over the external `edge` Docker network.
-
-```bash
-docker network create edge 2>/dev/null || true
-cd deploy
-cp .env.example .env   # fill in Turso and Turnstile values
-docker compose up -d --build
-```
-
 ## Configuration
 
 When `DATABASE_URL` is unset, environment variables are loaded from a `.env` file if one exists. See `.env.example` for the full list.
@@ -160,7 +149,7 @@ GitHub Actions (`.github/workflows/build-and-test.yml`) runs `go build -v ./...`
 │   ├── html/                 # base.html layout, pages/, partials/
 │   └── static/               # Page CSS and JS
 ├── db/migrations/            # SQL migrations, applied automatically at startup
-├── deploy/                  # docker-compose.yml for self-hosting behind the shared proxy
+├── deploy/                  # docker-compose.yml for running the container
 ├── Dockerfile
 ├── Makefile
 ├── .air.toml                 # Live-reload config
@@ -168,34 +157,6 @@ GitHub Actions (`.github/workflows/build-and-test.yml`) runs `go build -v ./...`
 └── AGENTS.md                 # Architecture and conventions for AI coding agents
 ```
 
-## Continuous deployment
+## Deployment
 
-Every push to `main` runs the existing **Go** workflow on GitHub. If it passes, `.github/workflows/deploy.yml` runs on a self-hosted runner on the home server (Ubuntu laptop), which rebuilds and restarts the `rcv-app` container. Caddy and the Cloudflare tunnel from [emiliano-ponce/homelab](https://github.com/emiliano-ponce/homelab) keep routing to it unchanged. Self-hosted runners are free, even for private repos (no Actions minutes used).
-
-### One-time laptop setup
-
-1. **Install the runner.** In GitHub: *Settings → Actions → Runners → New self-hosted runner*, pick **Linux / x64**, and run the download commands it shows in a new folder (e.g. `~/actions-runner-rcv-app`). When configuring, add a label:
-   ```sh
-   ./config.sh --url https://github.com/emiliano-ponce/rcv-app --token <TOKEN> --labels rcv-app
-   ```
-2. **Run it as a service** so it survives reboots:
-   ```sh
-   sudo ./svc.sh install && sudo ./svc.sh start
-   ```
-3. **Let the runner use Docker.** Add the runner's user to the `docker` group, then restart the service:
-   ```sh
-   sudo usermod -aG docker $USER
-   sudo ./svc.sh stop && sudo ./svc.sh start
-   ```
-4. **Put the production env file in its fixed home** (never committed):
-   ```sh
-   mkdir -p ~/apps/rcv-app && cp ~/rcv-app/deploy/.env ~/apps/rcv-app/.env && chmod 600 ~/apps/rcv-app/.env
-   ```
-   The compose file reads `${APP_ENV_FILE:-.env}`, so local `docker compose up` in `deploy/` still uses `deploy/.env`.
-5. **Cut over once.** Stop the manually started stack, then let the first deploy bring it back:
-   ```sh
-   cd ~/rcv-app/deploy && docker compose down
-   ```
-   Then trigger *Actions → Deploy → Run workflow* (or merge to `main`). The compose project is pinned to `name: rcv-app`, so later manual runs from `~/rcv-app/deploy` manage the same stack instead of creating a duplicate.
-
-To change production config, edit `~/apps/rcv-app/.env` and re-run the Deploy workflow.
+Pushes to `main` are deployed automatically by GitHub Actions once CI passes.
