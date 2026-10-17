@@ -277,11 +277,14 @@ func explainRound(r models.RoundResult, nameMap map[int]string) string {
 		return fmt.Sprintf("%s received the fewest first-choice votes this round (%d of %d) and was eliminated.", name, votes, r.TotalVotes)
 	}
 
-	tiedNames := make([]string, 0, len(r.TiedCandidateIDs))
-	for _, id := range r.TiedCandidateIDs {
+	// Copy and sort the IDs so the wording never depends on input order.
+	tiedIDs := append([]int(nil), r.TiedCandidateIDs...)
+	sort.Ints(tiedIDs)
+	tiedNames := make([]string, 0, len(tiedIDs))
+	for _, id := range tiedIDs {
 		tiedNames = append(tiedNames, nameMap[id])
 	}
-	tiedList := strings.Join(tiedNames, ", ")
+	tiedList := joinNames(tiedNames)
 
 	switch r.TiebreakMethod {
 	case "borda":
@@ -297,6 +300,19 @@ func explainRound(r models.RoundResult, nameMap map[int]string) string {
 	default:
 		return fmt.Sprintf("%s received the fewest first-choice votes this round (%d of %d) and was eliminated.", name, votes, r.TotalVotes)
 	}
+}
+
+// joinNames renders names as "A and B" or "A, B, and C".
+func joinNames(names []string) string {
+	switch len(names) {
+	case 0:
+		return ""
+	case 1:
+		return names[0]
+	case 2:
+		return names[0] + " and " + names[1]
+	}
+	return strings.Join(names[:len(names)-1], ", ") + ", and " + names[len(names)-1]
 }
 
 func ownerCookieName(key string) string {

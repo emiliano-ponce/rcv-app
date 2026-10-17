@@ -73,6 +73,9 @@ func Tabulate(candidates []int, ballots []models.Ballot) (int, []models.RoundRes
 				tied = append(tied, id)
 			}
 		}
+		// Map iteration order is random; sort so the round result (and the
+		// explanation rendered from it) is identical for identical inputs.
+		sort.Ints(tied)
 
 		loserID, method, scores := breakTie(tied, activeCandidates, ballots)
 		delete(activeCandidates, loserID)

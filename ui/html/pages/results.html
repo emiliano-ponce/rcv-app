@@ -10,7 +10,7 @@
 {{ define "content" }}
   <div class="page-wide">
     {{ if .ShowVotedToast }}
-    <div id="voted-toast" class="toast">Ballot received!</div>
+    <div id="voted-toast" class="toast" role="status" aria-live="polite" title="Click to dismiss">Ballot received!</div>
     {{ end }}
 
     <div class="poll-header">
