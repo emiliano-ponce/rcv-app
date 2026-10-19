@@ -48,3 +48,7 @@
     background: var(--border);
     color: var(--navy-60);
 }
+
+.turnstile-wrap {
+  margin-top: 16px;
+}

@@ -9,25 +9,46 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/egp/rcv-app/internal/security"
 )
 
 // HomeHandler serves GET / — the landing page.
 func (h *Handler) HomeHandler(w http.ResponseWriter, r *http.Request) {
-	h.render(w, "home", homeData{})
+	h.render(w, "home", h.newHomeData(nil))
 }
+
+// newHomeData builds the home page data with the create form's 10 candidate
+// rows, pre-filled from values (which may be nil or shorter than 10).
+func (h *Handler) newHomeData(values []string) homeData {
+	fields := make([]candidateField, maxCandidates)
+	for i := range fields {
+		fields[i].N = i + 1
+		if i < len(values) {
+			fields[i].Value = values[i]
+		}
+	}
+	return homeData{TurnstileKey: h.TurnstileKey, Candidates: fields}
+}
+
+const maxCandidates = 10
 
 // FindPollHandler serves POST /find — redirects to a poll by key.
 func (h *Handler) FindPollHandler(w http.ResponseWriter, r *http.Request) {
 	key := strings.TrimSpace(r.FormValue("key"))
 	if key == "" {
-		h.render(w, "home", homeData{Error: "Please enter a poll key."})
+		d := h.newHomeData(nil)
+		d.Error = "Please enter a poll key."
+		h.render(w, "home", d)
 		return
 	}
 
 	var exists int
 	err := h.DB.QueryRow("SELECT COUNT(*) FROM polls WHERE key = ?", key).Scan(&exists)
 	if err != nil || exists == 0 {
-		h.render(w, "home", homeData{Error: "Poll not found. Check the key and try again."})
+		d := h.newHomeData(nil)
+		d.Error = "Poll not found. Check the key and try again."
+		h.render(w, "home", d)
 		return
 	}
 
@@ -44,21 +65,57 @@ func (h *Handler) CreatePollHandler(w http.ResponseWriter, r *http.Request) {
 	title := strings.TrimSpace(r.FormValue("title"))
 	description := strings.TrimSpace(r.FormValue("description"))
 
-	if title == "" {
-		http.Error(w, "title is required", http.StatusBadRequest)
-		return
-	}
-
-	// Collect non-empty candidate names.
+	// Raw candidate values (preserving row positions) for re-rendering the form.
+	rawCandidates := make([]string, maxCandidates)
 	var candidateNames []string
-	for i := 1; i <= 10; i++ {
+	for i := 1; i <= maxCandidates; i++ {
 		name := strings.TrimSpace(r.FormValue(fmt.Sprintf("candidate_%d", i)))
+		rawCandidates[i-1] = name
 		if name != "" {
 			candidateNames = append(candidateNames, name)
 		}
 	}
+
+	formError := func(msg string) {
+		d := h.newHomeData(rawCandidates)
+		d.Error = msg
+		d.Title = title
+		d.Description = description
+		w.WriteHeader(http.StatusBadRequest)
+		h.render(w, "home", d)
+	}
+
+	if !h.DisableTurnstile {
+		token := strings.TrimSpace(r.FormValue("cf-turnstile-response"))
+		if token == "" {
+			formError("Please complete the verification challenge.")
+			return
+		}
+
+		if h.Turnstile == nil {
+			log.Printf("CreatePollHandler: turnstile verifier is not configured")
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		ok, err := h.Turnstile.Verify(r.Context(), token, security.ClientIP(r))
+		if err != nil {
+			log.Printf("CreatePollHandler: turnstile verify: %v", err)
+			formError("Could not verify challenge. Please try again.")
+			return
+		}
+		if !ok {
+			formError("Verification failed. Please try again.")
+			return
+		}
+	}
+
+	if title == "" {
+		formError("Please enter a poll title.")
+		return
+	}
 	if len(candidateNames) < 3 {
-		http.Error(w, "at least 3 candidates are required", http.StatusBadRequest)
+		formError("Please enter at least 3 candidates.")
 		return
 	}
 
