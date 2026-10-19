@@ -22,7 +22,17 @@ type Handler struct {
 }
 
 type homeData struct {
-	Error string
+	Error        string
+	TurnstileKey string
+	Title        string
+	Description  string
+	Candidates   []candidateField
+}
+
+// candidateField is one candidate input row on the create-poll form.
+type candidateField struct {
+	N     int
+	Value string
 }
 
 type pollCreatedData struct {

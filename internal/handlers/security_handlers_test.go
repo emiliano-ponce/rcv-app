@@ -181,6 +181,7 @@ func TestCreatePollHandler_RateLimit(t *testing.T) {
 		body.Set("candidate_1", "A")
 		body.Set("candidate_2", "B")
 		body.Set("candidate_3", "C")
+		body.Set("cf-turnstile-response", "token-ok")
 		req := httptest.NewRequest(http.MethodPost, "/polls", strings.NewReader(body.Encode()))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		req.RemoteAddr = "127.0.0.1:12000"

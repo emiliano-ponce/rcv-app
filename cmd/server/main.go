@@ -48,7 +48,7 @@ func main() {
 	if h.DisableTurnstile {
 		h.TurnstileKey = ""
 		h.Turnstile = nil
-		log.Println("DISABLE_TURNSTILE_VERIFY enabled: vote turnstile verification is bypassed")
+		log.Println("DISABLE_TURNSTILE_VERIFY enabled: vote and poll-create turnstile verification is bypassed")
 	} else {
 		h.TurnstileKey = turnstileSiteKey
 		h.Turnstile = security.NewCloudflareTurnstileVerifier(turnstileSecret, &http.Client{Timeout: 5 * time.Second})
